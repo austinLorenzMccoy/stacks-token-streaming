@@ -1,0 +1,44 @@
+# OS
+.DS_Store
+
+# Node
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Envs
+.env
+.env.*
+frontend/.env
+frontend/.env.*
+
+# Build outputs
+dist/
+frontend/dist/
+build/
+
+# Caches
+.cache/
+.vite/
+frontend/.vite/
+node_modules/.vite/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.eslintcache
+
+# Tooling
+.turbo/
+.vercel/
+.netlify/
+
+# Editors (keep if repo doesn’t track these)
+.idea/
+.vscode/
+
+# Clarinet (local artifacts)
+.clarinet/
