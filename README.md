@@ -35,35 +35,45 @@ The application is deployed and ready to use! Connect your wallet and start stre
 
 ## 🏗️ Architecture
 
+### Project Structure
+```
+sBTC-Streamr/
+├── contract/            # Smart contract (Clarity)
+│   ├── contracts/      # Contract source files
+│   ├── tests/          # Contract tests
+│   ├── deployments/    # Deployment plans
+│   └── settings/       # Network configurations
+├── frontend/           # Web application (React + Next.js)
+│   ├── src/
+│   │   ├── app/        # Next.js pages
+│   │   ├── components/ # UI components
+│   │   ├── hooks/      # Custom hooks
+│   │   └── lib/        # Utilities
+│   └── public/         # Static assets
+├── .gitignore
+└── README.md
+```
+
 ### Smart Contract (Clarity)
-```
-contracts/
-└── sBTC-Streamr.clar    # Main streaming protocol
-```
+Located in `contract/` folder.
 
 **Key Functions:**
 - `stream-to`: Create STX streams
-- `stream-token-to`: Create token streams  
+- `stream-token-to`: Create token streams (coming soon)
 - `withdraw`: Withdraw available funds
 - `refuel`: Add funds to streams
 - `refund`: Withdraw excess funds
 - `update-details`: Modify stream parameters
 
 ### Frontend (React + TypeScript)
-```
-frontend/
-├── src/
-│   ├── components/      # UI components
-│   ├── hooks/          # Custom hooks
-│   └── utils/          # Utilities
-└── public/             # Static assets
-```
+Located in `frontend/` folder.
 
-### Testing
-```
-tests/
-└── sBTC-Streamr.test.ts # Comprehensive test suite
-```
+**Features:**
+- Liquid Mercury theme (unique, non-generic)
+- Multi-token support (STX, sBTC, custom)
+- Real-time balance updates
+- Wallet integration (Stacks Connect)
+- Responsive design
 
 ## 🚀 Quick Start
 
@@ -74,25 +84,32 @@ tests/
 
 ### Smart Contract Setup
 
-1. **Install dependencies:**
+1. **Navigate to contract folder:**
+```bash
+cd contract
+```
+
+2. **Install dependencies:**
 ```bash
 npm install
 ```
 
-2. **Run tests:**
+3. **Run tests:**
 ```bash
-npm run test
+npm test
 ```
 
-3. **Deploy to testnet:**
+4. **Deploy to testnet:**
 ```bash
-clarinet deployments generate --testnet --low-cost
+# Get testnet STX from faucet first
 clarinet deployment apply -p deployments/default.testnet-plan.yaml
 ```
 
+See `TESTNET_DEPLOYMENT.md` for detailed deployment instructions.
+
 ### Frontend Setup
 
-1. **Navigate to frontend:**
+1. **Navigate to frontend folder:**
 ```bash
 cd frontend
 ```
