@@ -71,6 +71,16 @@
   )
 )
 
+;; Get the latest stream ID
+(define-read-only (get-latest-stream-id)
+  (var-get latest-stream-id)
+)
+
+;; Get stream details
+(define-read-only (get-stream (stream-id uint))
+  (map-get? streams stream-id)
+)
+
 ;; Check balance for a party involved in a stream
 (define-read-only (balance-of
     (stream-id uint)

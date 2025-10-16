@@ -16,7 +16,7 @@ const appDetails = {
 };
 
 const CONTRACT_ADDRESS = "ST1QXWAQZCKF0X9YJDEY3EWCA7ABHKFJ0AN9AGCTC";
-const CONTRACT_NAME = "stream";
+const CONTRACT_NAME = "stream-v2";
 
 export function useStacks() {
   const [userData, setUserData] = useState<UserData | null>(null);
