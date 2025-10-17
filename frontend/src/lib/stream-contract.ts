@@ -7,7 +7,7 @@ import {
 } from "@stacks/transactions";
 
 const CONTRACT_ADDRESS = "ST1QXWAQZCKF0X9YJDEY3EWCA7ABHKFJ0AN9AGCTC";
-const CONTRACT_NAME = "stream-v2";
+const CONTRACT_NAME = "stream-v3";
 
 // Network configuration - using testnet API
 const NETWORK = STACKS_TESTNET;
