@@ -7,7 +7,7 @@ import {
   type UserData,
   UserSession,
 } from "@stacks/connect";
-import { PostConditionMode, uintCV, principalCV, tupleCV } from "@stacks/transactions";
+import { PostConditionMode, uintCV, principalCV, tupleCV, contractPrincipalCV } from "@stacks/transactions";
 import { useEffect, useState } from "react";
 
 const appDetails = {
@@ -45,7 +45,8 @@ export function useStacks() {
     initialBalance: number,
     startBlock: number,
     stopBlock: number,
-    paymentPerBlock: number
+    paymentPerBlock: number,
+    tokenContractAddress?: string // Optional: for SIP-010 tokens
   ) {
     if (!userData) {
       window.alert("Please connect your wallet first");
@@ -54,26 +55,57 @@ export function useStacks() {
 
     setIsLoading(true);
     try {
-      await openContractCall({
-        contractAddress: CONTRACT_ADDRESS,
-        contractName: CONTRACT_NAME,
-        functionName: "stream-to",
-        functionArgs: [
-          principalCV(recipient),
-          uintCV(initialBalance),
-          tupleCV({
-            "start-block": uintCV(startBlock),
-            "stop-block": uintCV(stopBlock),
-          }),
-          uintCV(paymentPerBlock),
-        ],
-        appDetails,
-        onFinish: (data) => {
-          console.log("Stream created:", data);
-          window.alert("Stream created successfully! 🎉");
-        },
-        postConditionMode: PostConditionMode.Allow,
-      });
+      // Determine if this is a token stream or STX stream
+      const isTokenStream = !!tokenContractAddress;
+      
+      if (isTokenStream) {
+        // Parse token contract address (format: "address.contract-name")
+        const [address, contractName] = tokenContractAddress.split('.');
+        
+        await openContractCall({
+          contractAddress: CONTRACT_ADDRESS,
+          contractName: CONTRACT_NAME,
+          functionName: "stream-token-to",
+          functionArgs: [
+            contractPrincipalCV(address, contractName),
+            principalCV(recipient),
+            uintCV(initialBalance),
+            tupleCV({
+              "start-block": uintCV(startBlock),
+              "stop-block": uintCV(stopBlock),
+            }),
+            uintCV(paymentPerBlock),
+          ],
+          appDetails,
+          onFinish: (data) => {
+            console.log("Token stream created:", data);
+            window.alert("Token stream created successfully! 🎉");
+          },
+          postConditionMode: PostConditionMode.Allow,
+        });
+      } else {
+        // STX stream
+        await openContractCall({
+          contractAddress: CONTRACT_ADDRESS,
+          contractName: CONTRACT_NAME,
+          functionName: "stream-to",
+          functionArgs: [
+            principalCV(recipient),
+            uintCV(initialBalance),
+            tupleCV({
+              "start-block": uintCV(startBlock),
+              "stop-block": uintCV(stopBlock),
+            }),
+            uintCV(paymentPerBlock),
+          ],
+          appDetails,
+          onFinish: (data) => {
+            console.log("STX stream created:", data);
+            window.alert("STX stream created successfully! 🎉");
+          },
+          postConditionMode: PostConditionMode.Allow,
+        });
+      }
     } catch (error) {
       console.error("Error creating stream:", error);
       window.alert("Failed to create stream. Please try again.");

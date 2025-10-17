@@ -28,12 +28,23 @@ export default function CreateStream() {
       return;
     }
 
-    const initialBalance = parseSTX(parseFloat(totalAmount));
+    // Parse amounts based on selected token
+    const initialBalance = parseTokenAmount(parseFloat(totalAmount), selectedToken);
     const start = parseInt(startBlock);
     const stop = start + parseInt(duration);
-    const payment = parseSTX(parseFloat(paymentPerBlock));
+    const payment = parseTokenAmount(parseFloat(paymentPerBlock), selectedToken);
 
-    await handleCreateStream(recipient, initialBalance, start, stop, payment);
+    // Determine token contract address for SIP-010 tokens
+    let tokenContract: string | undefined;
+    if (selectedToken === 'CUSTOM') {
+      tokenContract = customTokenAddress;
+    } else if (selectedToken === 'sBTC') {
+      // Use the sBTC contract address from tokens.ts
+      tokenContract = 'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.token-sbtc';
+    }
+    // For STX, tokenContract remains undefined
+
+    await handleCreateStream(recipient, initialBalance, start, stop, payment, tokenContract);
     
     // Redirect to dashboard after creation
     setTimeout(() => router.push("/"), 2000);
