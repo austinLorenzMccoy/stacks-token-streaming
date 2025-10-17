@@ -101,7 +101,7 @@ export default function MyStreamsPage() {
       <div className="mb-12">
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <Send className="w-6 h-6 text-flow-400" />
-          Streams You're Sending
+          Streams You&apos;re Sending
         </h2>
         {sentStreams.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -111,7 +111,7 @@ export default function MyStreamsPage() {
           </div>
         ) : (
           <div className="stream-card text-center py-12">
-            <p className="text-gray-400">You haven't created any streams yet</p>
+            <p className="text-gray-400">You haven&apos;t created any streams yet</p>
           </div>
         )}
       </div>
@@ -120,7 +120,7 @@ export default function MyStreamsPage() {
       <div>
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <Inbox className="w-6 h-6 text-stream-400" />
-          Streams You're Receiving
+          Streams You&apos;re Receiving
         </h2>
         {receivedStreams.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,7 +130,7 @@ export default function MyStreamsPage() {
           </div>
         ) : (
           <div className="stream-card text-center py-12">
-            <p className="text-gray-400">You're not receiving any streams yet</p>
+            <p className="text-gray-400">You haven&#39;t received any streams yet</p>
           </div>
         )}
       </div>
