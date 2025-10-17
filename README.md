@@ -6,9 +6,11 @@ A decentralized streaming protocol that enables continuous payments with STX, sB
 
 ## 🌐 Live Demo
 
-**Try it now:** [https://s-btc-streamr.vercel.app](https://s-btc-streamr.vercel.app)
+**Try it now:** [https://stacks-token-streaming-liart.vercel.app](https://stacks-token-streaming-liart.vercel.app)
 
-The application is deployed and ready to use! Connect your wallet and start streaming tokens.
+**Deployed Contract:** `ST1QXWAQZCKF0X9YJDEY3EWCA7ABHKFJ0AN9AGCTC.stream-v3` on Stacks Testnet
+
+The application is fully deployed with multi-token streaming support! Connect your wallet and start streaming STX, sBTC, or custom SIP-010 tokens.
 
 ## 🌟 Features
 
@@ -59,11 +61,15 @@ Located in `contract/` folder.
 
 **Key Functions:**
 - `stream-to`: Create STX streams
-- `stream-token-to`: Create token streams (coming soon)
-- `withdraw`: Withdraw available funds
+- `stream-token-to`: Create SIP-010 token streams ✨ NEW
+- `withdraw`: Withdraw STX from streams
+- `withdraw-token`: Withdraw SIP-010 tokens from streams ✨ NEW
 - `refuel`: Add funds to streams
-- `refund`: Withdraw excess funds
+- `refund`: Withdraw excess STX
+- `refund-token`: Withdraw excess SIP-010 tokens ✨ NEW
 - `update-details`: Modify stream parameters
+- `is-stx-stream`: Check if stream uses STX or tokens ✨ NEW
+- `get-token-contract`: Get token contract for a stream ✨ NEW
 
 ### Frontend (React + TypeScript)
 Located in `frontend/` folder.
@@ -131,12 +137,15 @@ npm run dev
 All tests passing ✅
 
 ```
-✓ 12 tests passed
-- Stream creation and management
-- Multi-token support
-- Withdrawal and refund functionality  
+✓ 19 tests passed
+- STX stream creation and management
+- SIP-010 token stream creation ✨ NEW
+- Multi-token detection and helpers ✨ NEW
+- STX withdrawal and refund functionality
+- Token withdrawal and refund functionality ✨ NEW
 - Signature verification
-- Error handling
+- Authorization and access control
+- Error handling and edge cases
 ```
 
 ## 🎯 Use Cases
