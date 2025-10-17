@@ -52,6 +52,7 @@ describe("test token streaming contract", () => {
           "start-block": Cl.uint(0),
           "stop-block": Cl.uint(5),
         }),
+        "token-contract": Cl.none(),
       })
     );
   });
@@ -80,6 +81,7 @@ describe("test token streaming contract", () => {
           "start-block": Cl.uint(0),
           "stop-block": Cl.uint(5),
         }),
+        "token-contract": Cl.none(),
       })
     );
   });
@@ -228,6 +230,7 @@ describe("test token streaming contract", () => {
           "start-block": Cl.uint(0),
           "stop-block": Cl.uint(4),
         }),
+        "token-contract": Cl.none(),
       })
     );
   });

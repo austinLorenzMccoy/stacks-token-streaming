@@ -1,8 +1,22 @@
+;; SIP-010 Trait Definition
+(define-trait sip-010-trait
+  (
+    (transfer (uint principal principal (optional (buff 34))) (response bool uint))
+    (get-name () (response (string-ascii 32) uint))
+    (get-symbol () (response (string-ascii 32) uint))
+    (get-decimals () (response uint uint))
+    (get-balance (principal) (response uint uint))
+    (get-total-supply () (response uint uint))
+    (get-token-uri () (response (optional (string-utf8 256)) uint))
+  )
+)
+
 ;; error codes
 (define-constant ERR_UNAUTHORIZED (err u0))
 (define-constant ERR_INVALID_SIGNATURE (err u1))
 (define-constant ERR_STREAM_STILL_ACTIVE (err u2))
 (define-constant ERR_INVALID_STREAM_ID (err u3))
+(define-constant ERR_TOKEN_TRANSFER_FAILED (err u4))
 
 ;; data vars
 (define-data-var latest-stream-id uint u0)
@@ -17,7 +31,8 @@
     balance: uint,
     withdrawn-balance: uint,
     payment-per-block: uint,
-    timeframe: (tuple (start-block uint) (stop-block uint))
+    timeframe: (tuple (start-block uint) (stop-block uint)),
+    token-contract: (optional principal) ;; none for STX, some for SIP-010 tokens
   }
 )
 
@@ -36,7 +51,8 @@
       balance: initial-balance,
       withdrawn-balance: u0,
       payment-per-block: payment-per-block,
-      timeframe: timeframe
+      timeframe: timeframe,
+      token-contract: none
     })
     (current-stream-id (var-get latest-stream-id))
   )
@@ -53,6 +69,33 @@
   )
 )
 
+;; Create a new token stream (SIP-010)
+(define-public (stream-token-to
+    (token <sip-010-trait>)
+    (recipient principal)
+    (initial-balance uint)
+    (timeframe (tuple (start-block uint) (stop-block uint)))
+    (payment-per-block uint)
+  )
+  (let (
+    (stream {
+      sender: contract-caller,
+      recipient: recipient,
+      balance: initial-balance,
+      withdrawn-balance: u0,
+      payment-per-block: payment-per-block,
+      timeframe: timeframe,
+      token-contract: (some (contract-of token))
+    })
+    (current-stream-id (var-get latest-stream-id))
+  )
+    ;; Transfer tokens from sender to contract using SIP-010 transfer trait
+    (try! (contract-call? token transfer initial-balance contract-caller (as-contract tx-sender) none))
+    (map-set streams current-stream-id stream)
+    (var-set latest-stream-id (+ current-stream-id u1))
+    (ok current-stream-id)
+  )
+)
 
 ;; Increase the locked STX balance for a stream
 (define-public (refuel
@@ -68,6 +111,24 @@
     (merge stream {balance: (+ (get balance stream) amount)})
   )
   (ok amount)
+  )
+)
+
+;; Check if stream is STX-based
+(define-read-only (is-stx-stream (stream-id uint))
+  (let (
+    (stream (unwrap! (map-get? streams stream-id) false))
+  )
+    (is-none (get token-contract stream))
+  )
+)
+
+;; Get token contract for a stream
+(define-read-only (get-token-contract (stream-id uint))
+  (let (
+    (stream (unwrap! (map-get? streams stream-id) none))
+  )
+    (get token-contract stream)
   )
 )
 
@@ -127,7 +188,7 @@
   )
 )
 
-;; Withdraw received tokens
+;; Withdraw received STX tokens
 (define-public (withdraw
     (stream-id uint)
   )
@@ -136,6 +197,7 @@
     (balance (balance-of stream-id contract-caller))
   )
     (asserts! (is-eq contract-caller (get recipient stream)) ERR_UNAUTHORIZED)
+    (asserts! (is-none (get token-contract stream)) ERR_TOKEN_TRANSFER_FAILED) ;; Must be STX stream
     (map-set streams stream-id 
       (merge stream {withdrawn-balance: (+ (get withdrawn-balance stream) balance)})
     )
@@ -144,7 +206,28 @@
   )
 )
 
-;; Withdraw excess locked tokens
+;; Withdraw received SIP-010 tokens
+(define-public (withdraw-token
+    (stream-id uint)
+    (token <sip-010-trait>)
+  )
+  (let (
+    (stream (unwrap! (map-get? streams stream-id) ERR_INVALID_STREAM_ID))
+    (balance (balance-of stream-id contract-caller))
+    (token-contract-opt (get token-contract stream))
+  )
+    (asserts! (is-eq contract-caller (get recipient stream)) ERR_UNAUTHORIZED)
+    (asserts! (is-some token-contract-opt) ERR_TOKEN_TRANSFER_FAILED) ;; Must be token stream
+    (asserts! (is-eq (some (contract-of token)) token-contract-opt) ERR_TOKEN_TRANSFER_FAILED) ;; Verify correct token
+    (map-set streams stream-id 
+      (merge stream {withdrawn-balance: (+ (get withdrawn-balance stream) balance)})
+    )
+    (try! (as-contract (contract-call? token transfer balance tx-sender (get recipient stream) none)))
+    (ok balance)
+  )
+)
+
+;; Withdraw excess locked STX
 (define-public (refund
     (stream-id uint)
   )
@@ -154,11 +237,35 @@
   )
     (asserts! (is-eq contract-caller (get sender stream)) ERR_UNAUTHORIZED)
     (asserts! (< (get stop-block (get timeframe stream)) block-height) ERR_STREAM_STILL_ACTIVE)
+    (asserts! (is-none (get token-contract stream)) ERR_TOKEN_TRANSFER_FAILED) ;; Must be STX stream
     (map-set streams stream-id (merge stream {
         balance: (- (get balance stream) balance),
       }
     ))
     (try! (as-contract (stx-transfer? balance tx-sender (get sender stream))))
+    (ok balance)
+  )
+)
+
+;; Withdraw excess locked tokens
+(define-public (refund-token
+    (stream-id uint)
+    (token <sip-010-trait>)
+  )
+  (let (
+    (stream (unwrap! (map-get? streams stream-id) ERR_INVALID_STREAM_ID))
+    (balance (balance-of stream-id (get sender stream)))
+    (token-contract-opt (get token-contract stream))
+  )
+    (asserts! (is-eq contract-caller (get sender stream)) ERR_UNAUTHORIZED)
+    (asserts! (< (get stop-block (get timeframe stream)) block-height) ERR_STREAM_STILL_ACTIVE)
+    (asserts! (is-some token-contract-opt) ERR_TOKEN_TRANSFER_FAILED) ;; Must be token stream
+    (asserts! (is-eq (some (contract-of token)) token-contract-opt) ERR_TOKEN_TRANSFER_FAILED) ;; Verify correct token
+    (map-set streams stream-id (merge stream {
+        balance: (- (get balance stream) balance),
+      }
+    ))
+    (try! (as-contract (contract-call? token transfer balance tx-sender (get sender stream) none)))
     (ok balance)
   )
 )

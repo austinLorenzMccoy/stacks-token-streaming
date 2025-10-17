@@ -5,12 +5,7 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 requirements = []
-[contracts.stream]
-path = "contracts/stream.clar"
-clarity_version = 2
-epoch = 2.4
-
-[contracts.stream-v2]
+[contracts.stream-v3]
 path = "contracts/stream.clar"
 clarity_version = 2
 epoch = 2.4
